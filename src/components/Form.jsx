@@ -33,3 +33,4 @@ function Form({ setTitulo, setImgSRC, setDescripcion, agregarPost }) {
 }
 
 export default Form;
+

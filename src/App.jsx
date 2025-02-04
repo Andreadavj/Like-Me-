@@ -7,7 +7,7 @@ const urlBaseServer = "http://localhost:3000";
 
 function App() {
   const [titulo, setTitulo] = useState("");
-  const [imgSrc, setImgSRC] = useState("");
+  const [imgSrc, setImgSRC] = useState(""); // Para almacenar la URL de la imagen
   const [descripcion, setDescripcion] = useState("");
   const [posts, setPosts] = useState([]);
 
@@ -18,24 +18,36 @@ function App() {
 
   const agregarPost = async () => {
     const post = { titulo, url: imgSrc, descripcion };
-    await axios.post(urlBaseServer + "/posts", post);
+    await axios.post(urlBaseServer + "/posts", post); // Enviar post al backend
     getPosts();
   };
 
-  // este método se utilizará en el siguiente desafío
+  // Este método se utilizará para manejar "likes"
   const like = async (id) => {
     await axios.put(urlBaseServer + `/posts/like/${id}`);
     getPosts();
   };
 
-  // este método se utilizará en el siguiente desafío
+  // Este método se utilizará para eliminar posts
   const eliminarPost = async (id) => {
     await axios.delete(urlBaseServer + `/posts/${id}`);
     getPosts();
   };
 
+  // Para manejar el cambio de la imagen seleccionada
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]; // Obtener el archivo seleccionado
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgSRC(reader.result); // Guardar la URL de la imagen en el estado
+      };
+      reader.readAsDataURL(file); // Leer el archivo como URL
+    }
+  };
+
   useEffect(() => {
-    getPosts();
+    getPosts(); // Obtener los posts al cargar el componente
   }, []);
 
   return (
@@ -49,6 +61,19 @@ function App() {
             setDescripcion={setDescripcion}
             agregarPost={agregarPost}
           />
+          {/* Aquí se agrega el input para la carga de la imagen */}
+          <div className="mb-3">
+            <label htmlFor="image" className="form-label">
+              Subir Imagen
+            </label>
+            <input
+              type="file"
+              id="image"
+              className="form-control"
+              onChange={handleImageChange}
+            />
+            {imgSrc && <img src={imgSrc} alt="Vista previa" className="mt-3" style={{ maxWidth: "100%" }} />}
+          </div>
         </div>
         <div className="col-12 col-sm-8 px-5 row posts align-items-start">
           {posts.map((post, i) => (

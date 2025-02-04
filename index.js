@@ -1,41 +1,17 @@
 import express from "express";
-import cors from "cors";
-import { pool } from "./config/db.mjs";  // Asegúrate de tener configurada tu base de datos correctamente
+import multer from "multer";
+import path from "path";
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const upload = multer({ dest: 'uploads/' });  // Define la carpeta de destino para las imágenes
 
-const PORT = 3000;
-
-app.get("/posts", async (req, res) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM posts");
-    res.json(rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al obtener los posts" });
-  }
+// Ruta para manejar la carga de imágenes
+app.post("/upload", upload.single("image"), (req, res) => {
+  const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+  res.json({ imageUrl });
 });
 
-app.post("/posts", async (req, res) => {
-  const { titulo, url, descripcion } = req.body;
-
-  if (!titulo || !url || !descripcion) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios" });
-  }
-
-  try {
-    const query = "INSERT INTO posts (titulo, img, descripcion, likes) VALUES ($1, $2, $3, 0) RETURNING *";
-    const values = [titulo, url, descripcion];
-    const { rows } = await pool.query(query, values);
-    res.json(rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al insertar el post" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// Inicia el servidor
+app.listen(3000, () => {
+  console.log("Servidor corriendo en http://localhost:3000");
 });
